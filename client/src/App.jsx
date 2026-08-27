@@ -80,7 +80,7 @@ export default function App() {
             <span className="cursor-blink">▌</span>
           </div>
           <h1>CollabCode</h1>
-          <p className="join-sub">Real-time collaborative code editor with AI review.</p>
+          <p className="join-sub">Real-time pair programming rooms with live cursors and AI code review.</p>
           <label className="join-label" htmlFor="room-input">room name</label>
           <input
             id="room-input"
@@ -91,9 +91,13 @@ export default function App() {
             autoFocus
           />
           <button className="btn-primary" onClick={() => room.trim() && setJoined(true)}>
-            Join room →
+            Join room
           </button>
-          <p className="join-hint">Anyone who joins the same room name edits the same document, live.</p>
+          <div className="join-stats" aria-label="CollabCode highlights">
+            <span>Live sync</span>
+            <span>Shared rooms</span>
+            <span>AI review</span>
+          </div>
         </div>
       </div>
     );
@@ -102,16 +106,23 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">CollabCode</div>
-        <div className="room-pill">room: <strong>{room}</strong></div>
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="cpp">C++</option>
-        </select>
-        <button className="btn-primary" onClick={handleReview} disabled={reviewing}>
-          {reviewing ? 'Reviewing…' : 'AI Review'}
-        </button>
+        <div>
+          <div className="brand">CollabCode</div>
+          <div className="room-pill">
+            <span className="live-dot" aria-hidden="true" />
+            room <strong>{room}</strong>
+          </div>
+        </div>
+        <div className="topbar-actions">
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Language">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+          </select>
+          <button className="btn-primary" onClick={handleReview} disabled={reviewing}>
+            {reviewing ? 'Reviewing...' : 'AI Review'}
+          </button>
+        </div>
       </header>
 
       <div className="main-area">
