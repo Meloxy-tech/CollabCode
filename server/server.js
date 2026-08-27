@@ -3,9 +3,11 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { setupWSConnection } from 'y-websocket/bin/utils.js';
+import yWebsocketUtils from 'y-websocket/bin/utils';
 import { getReview } from './aiReview.js';
 import { registerRoom, touchRoom, listRooms } from './rooms.js';
+
+const { setupWSConnection } = yWebsocketUtils;
 
 const app = express();
 app.use(cors());
