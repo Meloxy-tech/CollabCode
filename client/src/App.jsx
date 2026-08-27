@@ -29,9 +29,14 @@ export default function App() {
   const [reviewing, setReviewing] = useState(false);
   const [runOutput, setRunOutput] = useState(null);
   const [running, setRunning] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   const ydoc = useMemo(() => new Y.Doc(), [joined]);
   const ytext = useMemo(() => ydoc.getText('codemirror'), [ydoc]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!joined) return undefined;
@@ -134,6 +139,29 @@ export default function App() {
           </div>
         </div>
         <div className="topbar-actions">
+          <button className="btn-primary" onClick={() => {
+            setTheme(t => t === 'dark' ? 'light' : 'dark');
+          }}>
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </button>
+          <button className="btn-primary" onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+          }}>
+            Copy Link
+          </button>
+          <button className="btn-primary" onClick={() => {
+            const ext = language === 'python' ? 'py' : language === 'cpp' ? 'cpp' : 'js';
+            const blob = new Blob([ytext.toString()], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `code.${ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}>
+            Download
+          </button>
           <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Language">
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
