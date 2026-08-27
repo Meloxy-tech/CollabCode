@@ -1,12 +1,12 @@
 export default function ReviewPanel({ review, loading }) {
   return (
     <div className="panel review-panel">
-      <h3 className="panel-title">AI Review</h3>
+      <h3 className="panel-title">Code Check</h3>
 
-      {loading && <p className="muted">Analyzing current code…</p>}
+      {loading && <p className="muted">Checking current code...</p>}
 
       {!loading && !review && (
-        <p className="muted">Run "AI Review" to check the room's code for issues.</p>
+        <p className="muted">Run "Code Check" to scan the room's code for issues.</p>
       )}
 
       {!loading && review && (

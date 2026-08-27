@@ -27,6 +27,8 @@ export default function App() {
   const [provider, setProvider] = useState(null);
   const [review, setReview] = useState(null);
   const [reviewing, setReviewing] = useState(false);
+  const [runOutput, setRunOutput] = useState(null);
+  const [running, setRunning] = useState(false);
 
   const ydoc = useMemo(() => new Y.Doc(), [joined]);
   const ytext = useMemo(() => ydoc.getText('codemirror'), [ydoc]);
@@ -71,6 +73,24 @@ export default function App() {
     }
   }
 
+  async function handleRun() {
+    setRunning(true);
+    setRunOutput(null);
+    try {
+      const res = await fetch(`${API_URL}/api/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: ytext.toString(), language }),
+      });
+      const data = await res.json();
+      setRunOutput(res.ok ? data : { run: { output: data.error || 'Run failed.', stderr: data.error } });
+    } catch {
+      setRunOutput({ run: { output: 'Could not reach the run service. Is the server running?' } });
+    } finally {
+      setRunning(false);
+    }
+  }
+
   if (!joined) {
     return (
       <div className="join-screen">
@@ -80,7 +100,7 @@ export default function App() {
             <span className="cursor-blink">▌</span>
           </div>
           <h1>CollabCode</h1>
-          <p className="join-sub">Real-time collaborative code editor with AI review.</p>
+          <p className="join-sub">Real-time pair programming rooms with live cursors and a free built-in code check.</p>
           <label className="join-label" htmlFor="room-input">room name</label>
           <input
             id="room-input"
@@ -91,9 +111,13 @@ export default function App() {
             autoFocus
           />
           <button className="btn-primary" onClick={() => room.trim() && setJoined(true)}>
-            Join room →
+            Join room
           </button>
-          <p className="join-hint">Anyone who joins the same room name edits the same document, live.</p>
+          <div className="join-stats" aria-label="CollabCode highlights">
+            <span>Live sync</span>
+            <span>Shared rooms</span>
+            <span>Code check</span>
+          </div>
         </div>
       </div>
     );
@@ -102,16 +126,26 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">CollabCode</div>
-        <div className="room-pill">room: <strong>{room}</strong></div>
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="cpp">C++</option>
-        </select>
-        <button className="btn-primary" onClick={handleReview} disabled={reviewing}>
-          {reviewing ? 'Reviewing…' : 'AI Review'}
-        </button>
+        <div>
+          <div className="brand">CollabCode</div>
+          <div className="room-pill">
+            <span className="live-dot" aria-hidden="true" />
+            room <strong>{room}</strong>
+          </div>
+        </div>
+        <div className="topbar-actions">
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Language">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+          </select>
+          <button className="btn-primary" onClick={handleReview} disabled={reviewing}>
+            {reviewing ? 'Checking...' : 'Code Check'}
+          </button>
+          <button className="btn-primary" onClick={handleRun} disabled={running}>
+            {running ? 'Running...' : 'Run Code'}
+          </button>
+        </div>
       </header>
 
       <div className="main-area">
@@ -123,6 +157,16 @@ export default function App() {
         <aside className="sidebar">
           <UserList users={users} you={{ name, color }} />
           <ReviewPanel review={review} loading={reviewing} />
+          <div className="panel run-panel" style={{ marginTop: '1rem' }}>
+            <h3 className="panel-title">Run Output</h3>
+            {running && <p className="muted">Executing code...</p>}
+            {!running && !runOutput && <p className="muted">Run code to see output.</p>}
+            {!running && runOutput && (
+              <pre className="run-output" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '12px', background: 'var(--bg)', padding: '0.5rem', borderRadius: '4px' }}>
+                {runOutput.run?.output || 'No output'}
+              </pre>
+            )}
+          </div>
         </aside>
       </div>
     </div>

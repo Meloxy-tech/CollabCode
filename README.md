@@ -1,7 +1,7 @@
 # CollabCode
 
 A real-time collaborative code editor — think "Google Docs for code" — with live multi-cursor
-editing, per-room presence, and an AI-powered code review assistant.
+editing, per-room presence, and a free built-in code checker.
 
 Built as a full-stack systems project: the interesting engineering problem here isn't CRUD,
 it's **keeping multiple people's edits in sync in real time without conflicts**, which is
@@ -15,9 +15,8 @@ what most CRUD-style student projects never touch.
 - **Live cursors & presence** — see who's online and where their cursor is, in their own color.
 - **Room-based sessions** — join any room by name; everyone in that room shares one document.
 - **Multi-language support** — JavaScript, Python, and C++ syntax highlighting.
-- **AI code review** — one click sends the current code to Claude for a structured review
-  (summary, flagged issues by severity, improvement suggestions). Falls back to a built-in
-  static analyzer if no API key is configured, so the app always works.
+- **Built-in code check** — one click scans the current code for common issues and returns
+  a summary, flagged lines by severity, and improvement suggestions with no API key needed.
 
 ## Why this project (for reviewers/recruiters)
 
@@ -26,7 +25,7 @@ This one does: it demonstrates
 
 - Real-time systems design (WebSockets, CRDTs, eventual consistency)
 - Full-stack ownership (React frontend, Node/Express backend, protocol design)
-- Practical AI integration (an LLM used as a feature, not a chatbot wrapper)
+- Practical automated review flow with no paid API requirement
 - A UI actually designed with intent, not a default template
 
 ## Architecture
@@ -41,9 +40,8 @@ flowchart LR
     end
     YA <-- WebSocket (CRDT sync) --> WS[y-websocket server]
     YB <-- WebSocket (CRDT sync) --> WS
-    EA -- "AI Review" click --> API[REST /api/review]
-    API --> Claude[Claude API]
-    API -. no API key .-> Heuristic[Static heuristic reviewer]
+    EA -- "Code Check" click --> API[REST /api/review]
+    API --> Heuristic[Built-in heuristic reviewer]
 ```
 
 **How sync works:** every keystroke is applied to a local Yjs document, which encodes it as a
@@ -59,7 +57,7 @@ needed. Cursor position and username/color are synced the same way via Yjs's awa
 | Frontend       | React, Vite, CodeMirror 6, `y-codemirror.next`                    |
 | Real-time sync | Yjs (CRDT), `y-websocket`, `ws`                                    |
 | Backend        | Node.js, Express                                                   |
-| AI review      | Claude API (`claude-sonnet-4-6`), with a rule-based fallback       |
+| Code check     | Dependency-free rule-based reviewer                                |
 
 ## Project structure
 
@@ -89,7 +87,6 @@ You'll need Node.js 18+.
 ```bash
 cd server
 npm install
-cp .env.example .env      # optionally add ANTHROPIC_API_KEY for real AI reviews
 npm run dev
 ```
 
@@ -124,7 +121,7 @@ second browser tab to see live collaboration in action.
 
 - Built a real-time collaborative code editor supporting concurrent multi-user editing using
   CRDTs (Yjs) over WebSockets, with live cursor presence and zero merge conflicts.
-- Integrated the Claude API to provide automated, structured code review (issues + suggestions),
-  with a rule-based fallback ensuring 100% feature uptime without external dependencies.
+- Built an automated code-check flow that returns structured issues and suggestions without
+  paid APIs or external keys.
 - Designed and implemented the full stack (React/Vite frontend, Node/Express backend, WebSocket
   protocol) from scratch, including a custom dark-mode IDE-style UI.

@@ -37,6 +37,24 @@ app.post('/api/review', async (req, res) => {
   }
 });
 
+import { runCode } from './runCode.js';
+
+app.post('/api/run', async (req, res) => {
+  const { code, language } = req.body || {};
+
+  if (typeof code !== 'string' || code.trim().length === 0) {
+    return res.status(400).json({ error: 'Request body must include a non-empty "code" string.' });
+  }
+
+  try {
+    const result = await runCode(code, language || 'javascript');
+    res.json(result);
+  } catch (err) {
+    console.error('Code execution failed:', err);
+    res.status(500).json({ error: 'Failed to run code.' });
+  }
+});
+
 const server = http.createServer(app);
 
 // Yjs uses the raw WebSocket connection for CRDT sync + awareness
